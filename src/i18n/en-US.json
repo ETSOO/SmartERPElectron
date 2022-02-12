@@ -1,0 +1,17 @@
+{
+    "appName": "ETSOO SmartERP",
+    "copy": "&Copy",
+    "copyLink": "Copy Lin&k",
+    "copyImage": "Cop&y Image",
+    "copyImageAddress": "C&opy Image Address",
+    "cut": "Cu&t",
+    "inspect": "I&nspect Element",
+    "learnSpelling": "&Learn Spelling",
+    "lookUpSelection": "Look Up “{selection}”",
+    "paste": "&Paste",
+    "saveImage": "Save I&mage",
+    "saveImageAs": "Sa&ve Image As…",
+    "saveLinkAs": "Save Link As…",
+    "searchWithGoogle": "&Search with Google",
+    "services": "Services"
+}

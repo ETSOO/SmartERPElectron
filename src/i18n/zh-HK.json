@@ -1,0 +1,17 @@
+{
+    "appName": "司友雲ERP",
+    "copy": "複製(&C)",
+    "copyLink": "複製鏈接(&K)",
+    "copyImage": "複製圖片(&Y)",
+    "copyImageAddress": "複製圖片地址(&O)",
+    "cut": "剪切(&U)",
+    "inspect": "檢查元素(&N)",
+    "learnSpelling": "糾正拼寫",
+    "lookUpSelection": "查找“{selection}”",
+    "paste": "黏貼(&P)",
+    "saveImage": "保存圖片(&M)",
+    "saveImageAs": "保存圖片為...(&V)",
+    "saveLinkAs": "保存鏈接為...",
+    "searchWithGoogle": "谷歌查詢(&S)",
+    "services": "服務"
+}
