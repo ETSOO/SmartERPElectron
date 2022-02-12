@@ -5,6 +5,16 @@ import { getCulture, ICulture } from './utils/CultureUtils';
 const contextMenu = require('electron-context-menu');
 const storage = require('electron-json-storage');
 
+// launching multiple times during install or update
+// https://www.electronforge.io/config/makers/squirrel.windows
+if (require('electron-squirrel-startup')) app.quit();
+
+// Auto update
+// https://github.com/electron/update-electron-app
+require('update-electron-app')({
+    updateInterval: '2 hours'
+});
+
 const appStorageField = 'SmartERP';
 
 // Current culture

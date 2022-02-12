@@ -1,7 +1,7 @@
 {
     "name": "smarterp-electron",
     "main": "./dist/main.js",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "ETSOO SmartERP Electron Desktop / 亿速思维司友云ERP桌面程序",
     "scripts": {
         "build": "tsc",
@@ -11,7 +11,7 @@
         "package": "npm run build && electron-forge package",
         "make": "npm run build && electron-forge make"
     },
-    "repository": "https://github.com/etsoo/smarterp-electron",
+    "repository": "https://github.com/ETSOO/SmartERPElectron",
     "keywords": [
         "Electron",
         "TypeScript",
@@ -39,7 +39,8 @@
         "@types/electron-json-storage": "^4.5.0",
         "electron-context-menu": "^3.1.1",
         "electron-json-storage": "^4.5.0",
-        "electron-squirrel-startup": "^1.0.0"
+        "electron-squirrel-startup": "^1.0.0",
+        "update-electron-app": "^2.0.1"
     },
     "config": {
         "forge": {
