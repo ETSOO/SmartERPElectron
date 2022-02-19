@@ -1,3 +1,3 @@
-# ETSOO SmartERP Electron Desktop
+# About
 
-# 亿速思维司友云ERP桌面程序
+**ETSOO SmartERP Electron Desktop / 亿速思维司友云ERP桌面程序**

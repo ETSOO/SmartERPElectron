@@ -1,7 +1,7 @@
 {
     "name": "smarterp-electron",
     "main": "./dist/main.js",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "description": "ETSOO SmartERP Electron Desktop / 亿速思维司友云ERP桌面程序",
     "scripts": {
         "build": "tsc",
@@ -37,9 +37,12 @@
     },
     "dependencies": {
         "@types/electron-json-storage": "^4.5.0",
+        "@types/semver": "^7.3.9",
         "electron-context-menu": "^3.1.1",
         "electron-json-storage": "^4.5.0",
         "electron-squirrel-startup": "^1.0.0",
+        "node-stream-zip": "^1.15.0",
+        "semver": "^7.3.5",
         "update-electron-app": "^2.0.1"
     },
     "config": {
@@ -47,6 +50,7 @@
             "packagerConfig": {
                 "name": "SmartERP",
                 "icon": "./public/favicon",
+                "ignore": "apps/",
                 "appCopyright": "Copyright © ETSOO 2004 - 2022"
             },
             "makers": [
