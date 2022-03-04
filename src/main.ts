@@ -226,6 +226,12 @@ function autoUpgrade(win: BrowserWindow) {
                             // Update version
                             apps[k] = version;
                             persistSettings(win);
+
+                            // Notice
+                            win.webContents.send('main-message', 'update', [
+                                k,
+                                version
+                            ]);
                         },
                         false,
                         newVersion
@@ -312,7 +318,7 @@ function autoUpgradeApp(
 }
 
 // IPC messages
-ipcMain.on('command', (event, name, param1, param2) => {
+ipcMain.on('command', (event, name, param1, param2, ...args) => {
     if (name === 'changeCulture') {
         updateCulture(param1);
         return;
@@ -339,6 +345,20 @@ ipcMain.on('command', (event, name, param1, param2) => {
         }
 
         return;
+    }
+});
+
+ipcMain.on('command-async', async (event, name, ...args) => {
+    if (name === 'getLabels') {
+        const init: Record<string, string> = {};
+        const result = args.reduce(
+            (a, v) => ({
+                ...a,
+                [v]: culture?.labels[v] ?? ''
+            }),
+            init
+        );
+        return Promise.resolve(result);
     }
 });
 

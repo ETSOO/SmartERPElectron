@@ -1,181 +1,200 @@
 <!DOCTYPE html>
 
 <html>
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="author" content="ETSOO" />
-        <title>Loading...</title>
-        <link rel="icon" href="favicon.ico" />
-        <link rel="apple-touch-icon" href="logo512.png" />
-        <style type="text/css">
-            html,
-            body {
-                margin: 0;
-                padding: 0;
-                width: 100%;
-                height: 100%;
-                background-color: #f3f3f3;
-                user-select: none;
-            }
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="ETSOO" />
+    <title>Loading...</title>
+    <link rel="icon" href="favicon.ico" />
+    <link rel="apple-touch-icon" href="logo512.png" />
+    <style type="text/css">
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #f3f3f3;
+        user-select: none;
+      }
 
-            .container {
-                position: relative;
-                top: 40%;
-                -ms-transform: translateY(-50%);
-                transform: translateY(-50%);
-            }
+      .container {
+        position: relative;
+        top: 40%;
+        -ms-transform: translateY(-50%);
+        transform: translateY(-50%);
+      }
 
-            .logo {
-                width: 32px;
-                height: 32px;
-                margin: 0 auto;
-                top: 60px;
-                position: relative;
-            }
-            .logo img {
-                width: 100%;
-                height: 100%;
-            }
+      .logo {
+        width: 32px;
+        height: 32px;
+        margin: 0 auto;
+        top: 60px;
+        position: relative;
+      }
+      .logo img {
+        width: 100%;
+        height: 100%;
+      }
 
-            .circle {
-                background-color: rgba(0, 0, 0, 0);
-                border: 5px solid rgba(226, 24, 33, 0.9);
-                opacity: 0.9;
-                border-right: 5px solid rgba(0, 0, 0, 0);
-                border-left: 5px solid rgba(0, 0, 0, 0);
-                border-radius: 80px;
-                box-shadow: 0 0 35px #e21821;
-                width: 80px;
-                height: 80px;
-                margin: 0 auto;
-                animation: spinPulse 1.2s infinite ease-in-out;
-                -moz-animation: spinPulse 1.2s infinite ease-in-out;
-                -webkit-animation: spinPulse 1.2s infinite linear;
-            }
+      .circle {
+        background-color: rgba(0, 0, 0, 0);
+        border: 5px solid rgba(226, 24, 33, 0.9);
+        opacity: 0.9;
+        border-right: 5px solid rgba(0, 0, 0, 0);
+        border-left: 5px solid rgba(0, 0, 0, 0);
+        border-radius: 80px;
+        box-shadow: 0 0 35px #e21821;
+        width: 80px;
+        height: 80px;
+        margin: 0 auto;
+        animation: spinPulse 1.2s infinite ease-in-out;
+        -moz-animation: spinPulse 1.2s infinite ease-in-out;
+        -webkit-animation: spinPulse 1.2s infinite linear;
+      }
 
-            .circle1 {
-                background-color: rgba(0, 0, 0, 0);
-                border: 5px solid rgba(226, 24, 33, 0.9);
-                opacity: 0.9;
-                border-left: 5px solid rgba(0, 0, 0, 0);
-                border-right: 5px solid rgba(0, 0, 0, 0);
-                border-radius: 80px;
-                box-shadow: 0 0 15px #e21821;
-                width: 50px;
-                height: 50px;
-                margin: 0 auto;
-                position: relative;
-                top: -75px;
-                animation: spinoffPulse 2s infinite linear;
-                -moz-animation: spinoffPulse 2s infinite linear;
-                -webkit-animation: spinoffPulse 2s infinite linear;
-            }
+      .circle1 {
+        background-color: rgba(0, 0, 0, 0);
+        border: 5px solid rgba(226, 24, 33, 0.9);
+        opacity: 0.9;
+        border-left: 5px solid rgba(0, 0, 0, 0);
+        border-right: 5px solid rgba(0, 0, 0, 0);
+        border-radius: 80px;
+        box-shadow: 0 0 15px #e21821;
+        width: 50px;
+        height: 50px;
+        margin: 0 auto;
+        position: relative;
+        top: -75px;
+        animation: spinoffPulse 2s infinite linear;
+        -moz-animation: spinoffPulse 2s infinite linear;
+        -webkit-animation: spinoffPulse 2s infinite linear;
+      }
 
-            .title {
-                text-align: center;
-                font-size: 12px;
-            }
+      .title {
+        text-align: center;
+        font-size: 12px;
+      }
 
-            @keyframes spinPulse {
-                0% {
-                    transform: rotate(160deg);
-                    opacity: 0;
-                    box-shadow: 0 0 1px #e21821;
-                }
+      @keyframes spinPulse {
+        0% {
+          transform: rotate(160deg);
+          opacity: 0;
+          box-shadow: 0 0 1px #e21821;
+        }
 
-                50% {
-                    transform: rotate(145deg);
-                    opacity: 1;
-                }
+        50% {
+          transform: rotate(145deg);
+          opacity: 1;
+        }
 
-                100% {
-                    transform: rotate(-320deg);
-                    opacity: 0;
-                }
-            }
+        100% {
+          transform: rotate(-320deg);
+          opacity: 0;
+        }
+      }
 
-            @keyframes spinoffPulse {
-                0% {
-                    transform: rotate(0deg);
-                }
+      @keyframes spinoffPulse {
+        0% {
+          transform: rotate(0deg);
+        }
 
-                100% {
-                    transform: rotate(360deg);
-                }
-            }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
 
-            @-moz-keyframes spinPulse {
-                0% {
-                    -moz-transform: rotate(160deg);
-                    opacity: 0;
-                    box-shadow: 0 0 1px #e21821;
-                }
+      @-moz-keyframes spinPulse {
+        0% {
+          -moz-transform: rotate(160deg);
+          opacity: 0;
+          box-shadow: 0 0 1px #e21821;
+        }
 
-                50% {
-                    -moz-transform: rotate(145deg);
-                    opacity: 1;
-                }
+        50% {
+          -moz-transform: rotate(145deg);
+          opacity: 1;
+        }
 
-                100% {
-                    -moz-transform: rotate(-320deg);
-                    opacity: 0;
-                }
-            }
+        100% {
+          -moz-transform: rotate(-320deg);
+          opacity: 0;
+        }
+      }
 
-            @-moz-keyframes spinoffPulse {
-                0% {
-                    -moz-transform: rotate(0deg);
-                }
+      @-moz-keyframes spinoffPulse {
+        0% {
+          -moz-transform: rotate(0deg);
+        }
 
-                100% {
-                    -moz-transform: rotate(360deg);
-                }
-            }
+        100% {
+          -moz-transform: rotate(360deg);
+        }
+      }
 
-            @-webkit-keyframes spinPulse {
-                0% {
-                    -webkit-transform: rotate(160deg);
-                    opacity: 0;
-                    box-shadow: 0 0 1px #e21821;
-                }
+      @-webkit-keyframes spinPulse {
+        0% {
+          -webkit-transform: rotate(160deg);
+          opacity: 0;
+          box-shadow: 0 0 1px #e21821;
+        }
 
-                50% {
-                    -webkit-transform: rotate(145deg);
-                    opacity: 1;
-                }
+        50% {
+          -webkit-transform: rotate(145deg);
+          opacity: 1;
+        }
 
-                100% {
-                    -webkit-transform: rotate(-320deg);
-                    opacity: 0;
-                }
-            }
+        100% {
+          -webkit-transform: rotate(-320deg);
+          opacity: 0;
+        }
+      }
 
-            @-webkit-keyframes spinoffPulse {
-                0% {
-                    -webkit-transform: rotate(0deg);
-                }
+      @-webkit-keyframes spinoffPulse {
+        0% {
+          -webkit-transform: rotate(0deg);
+        }
 
-                100% {
-                    -webkit-transform: rotate(360deg);
-                }
-            }
-        </style>
-    </head>
+        100% {
+          -webkit-transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
 
-    <body>
-        <div class="container">
-            <div class="logo"><img src="logo192.png" /></div>
-            <div class="circle"></div>
-            <div class="circle1"></div>
-            <div class="title">
-                <script>
-                    const search = new URLSearchParams(window.location.search);
-                    const title = search.get('title');
-                    document.title = title;
-                    document.write(title);
-                </script>
-            </div>
-        </div>
-    </body>
+  <body>
+    <div class="container">
+      <div class="logo"><img src="logo192.png" /></div>
+      <div class="circle"></div>
+      <div class="circle1"></div>
+      <div class="title"></div>
+    </div>
+  </body>
+
+  <script>
+    function setTitle(title) {
+      document.title = title;
+      const titleDiv = document.querySelector("div.title");
+      if (titleDiv) titleDiv.innerHTML = title;
+    }
+
+    const search = new URLSearchParams(window.location.search);
+    const title = search.get("title");
+    if (title) {
+      setTitle(title);
+    } else if (window.flutter_inappwebview) {
+      // window.flutter_inappwebview.callHandler is not ready yet
+      window.addEventListener(
+        "flutterInAppWebViewPlatformReady",
+        function (event) {
+          window.flutter_inappwebview
+            .callHandler("getLabels", "loading")
+            .then((result) => {
+              setTitle(result.loading);
+            });
+        }
+      );
+    }
+  </script>
 </html>
