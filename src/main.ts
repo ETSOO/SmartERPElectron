@@ -298,7 +298,7 @@ function autoUpgradeApp(
 
     // Get the zip file
     const request = https.get(
-        `https://cn.etsoo.com/apps/${app}.zip`,
+        `https://cn.etsoo.com/apps/${app}${version}.zip`,
         function (response) {
             // Save to file
             response.pipe(file);
