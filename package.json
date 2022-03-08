@@ -1,7 +1,7 @@
 {
     "name": "smarterp-electron",
     "main": "./dist/main.js",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "description": "ETSOO SmartERP Electron Desktop / 亿速思维司友云ERP桌面程序",
     "scripts": {
         "build": "tsc",

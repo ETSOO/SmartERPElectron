@@ -259,9 +259,18 @@ function autoUpgradeApp(
     );
 
     const file = fs.createWriteStream(filePath, { autoClose: true });
-    file.on('close', () => {
+    file.on('finish', () => {
         // Extract
         const zip = new StreamZip({ file: filePath });
+        zip.on('error', (err) => {
+            if (loading) {
+                dialog.showMessageBox(win, {
+                    type: 'error',
+                    title: 'Unzip Error',
+                    message: `${err}`
+                });
+            }
+        });
         zip.on('ready', () => {
             // Remove all content
             fs.rmSync(appPath, { recursive: true, force: true });
