@@ -1,11 +1,15 @@
 {
     "appName": "司友®云ERP",
+    "close": "关闭",
+    "retry": "重试",
     "copy": "复制(&C)",
     "copyLink": "复制链接(&K)",
     "copyImage": "复制图片(&Y)",
     "copyImageAddress": "复制图片地址(&O)",
     "cut": "剪切(&U)",
     "download": "下载",
+    "downloadErrorMessage": "{0}，点击'重试'按钮尝试重新下载。",
+    "downloadErrorTitle": "下载程序错误",
     "inspect": "检查元素(&N)",
     "learnSpelling": "纠正拼写",
     "loading": "司友®云ERP正在加载...",
@@ -15,5 +19,7 @@
     "saveImageAs": "保存图片为...(&V)",
     "saveLinkAs": "保存链接为...",
     "searchWithGoogle": "谷歌查询(&S)",
-    "services": "服务"
+    "services": "服务",
+    "versionErrorMessage": "{0}，点击'重试'按钮尝试重新加载。",
+    "versionErrorTitle": "请求版本错误"
 }

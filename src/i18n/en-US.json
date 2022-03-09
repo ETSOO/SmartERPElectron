@@ -1,11 +1,15 @@
 {
     "appName": "ETSOO® SmartERP",
+    "close": "Close",
+    "retry": "Retry",
     "copy": "&Copy",
     "copyLink": "Copy Lin&k",
     "copyImage": "Cop&y Image",
     "copyImageAddress": "C&opy Image Address",
     "cut": "Cu&t",
     "download": "Download",
+    "downloadErrorMessage": "{0}. Click the 'Retry' button to download again.",
+    "downloadErrorTitle": "Download program error",
     "inspect": "I&nspect Element",
     "learnSpelling": "&Learn Spelling",
     "loading": "SmartERP is loading...",
@@ -15,5 +19,7 @@
     "saveImageAs": "Sa&ve Image As…",
     "saveLinkAs": "Save Link As…",
     "searchWithGoogle": "&Search with Google",
-    "services": "Services"
+    "services": "Services",
+    "versionErrorMessage": "{0}. Click the 'Retry' button to reload.",
+    "versionErrorTitle": "Request version error"
 }

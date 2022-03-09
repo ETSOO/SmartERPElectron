@@ -1,11 +1,15 @@
 {
     "appName": "司友®雲ERP",
+    "close": "關閉",
+    "retry": "重試",
     "copy": "複製(&C)",
     "copyLink": "複製鏈接(&K)",
     "copyImage": "複製圖片(&Y)",
     "copyImageAddress": "複製圖片地址(&O)",
     "cut": "剪切(&U)",
     "download": "下載",
+    "downloadErrorMessage": "{0}，點擊'重試'按鈕嘗試重新下載。",
+    "downloadErrorTitle": "下載程序錯誤",
     "inspect": "檢查元素(&N)",
     "learnSpelling": "糾正拼寫",
     "loading": "司友®雲ERP正在加載...",
@@ -15,5 +19,7 @@
     "saveImageAs": "保存圖片為...(&V)",
     "saveLinkAs": "保存鏈接為...",
     "searchWithGoogle": "谷歌查詢(&S)",
-    "services": "服務"
+    "services": "服務",
+    "versionErrorMessage": "{0}，點擊'重試'按鈕嘗試重新加載。",
+    "versionErrorTitle": "請求版本錯誤"
 }

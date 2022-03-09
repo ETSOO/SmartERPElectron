@@ -165,11 +165,26 @@ function loadVersions(
     // Error handler
     request.on('error', function (err) {
         if (errorHandling) {
-            dialog.showMessageBox(win, {
-                type: 'error',
-                title: 'Request Versions Error',
-                message: err.message
-            });
+            const labels = culture?.labels!;
+            dialog
+                .showMessageBox(win, {
+                    type: 'error',
+                    title: labels.versionErrorTitle,
+                    buttons: [labels.retry, labels.close],
+                    message:
+                        labels.versionErrorMessage.replace(
+                            '{0}',
+                            err.message
+                        ) ?? err.message
+                })
+                .then((value) => {
+                    if (value.response === 0) {
+                        // Retry
+                        loadVersions(win, callback, errorHandling);
+                    } else {
+                        app.quit();
+                    }
+                });
         }
     });
 }
@@ -246,17 +261,20 @@ function autoUpgrade(win: BrowserWindow) {
 // Auto upgrade app
 function autoUpgradeApp(
     win: BrowserWindow,
-    app: VersionName,
+    appName: VersionName,
     callback: (version: string) => void,
     loading: boolean = false,
     version: string
 ) {
     // Download the app
-    const filePath = path.join(__dirname, `.\\..\\apps\\${app}.zip`);
+    const filePath = path.join(__dirname, `.\\..\\apps\\${appName}.zip`);
     const appPath = path.join(
         __dirname,
-        `.\\..\\apps\\${app + (loading ? '' : `-${version}`)}`
+        `.\\..\\apps\\${appName + (loading ? '' : `-${version}`)}`
     );
+
+    // Remove file
+    fs.rmSync(filePath, { recursive: true, force: true });
 
     const file = fs.createWriteStream(filePath, { autoClose: true });
     file.on('finish', () => {
@@ -307,7 +325,7 @@ function autoUpgradeApp(
 
     // Get the zip file
     const request = https.get(
-        `https://cn.etsoo.com/apps/${app}${version}.zip`,
+        `https://cn.etsoo.com/apps/${appName}.${version}.zip`,
         function (response) {
             // Save to file
             response.pipe(file);
@@ -317,11 +335,32 @@ function autoUpgradeApp(
     // Error handler
     request.on('error', function (err) {
         if (loading) {
-            dialog.showMessageBox(win, {
-                type: 'error',
-                title: 'Request Error',
-                message: err.message
-            });
+            const labels = culture?.labels!;
+            dialog
+                .showMessageBox(win, {
+                    type: 'error',
+                    title: labels.downloadErrorTitle,
+                    buttons: [labels.retry, labels.close],
+                    message:
+                        labels.downloadErrorMessage.replace(
+                            '{0}',
+                            err.message
+                        ) ?? err.message
+                })
+                .then((value) => {
+                    if (value.response === 0) {
+                        // Retry
+                        autoUpgradeApp(
+                            win,
+                            appName,
+                            callback,
+                            loading,
+                            version
+                        );
+                    } else {
+                        app.quit();
+                    }
+                });
         }
     });
 }
