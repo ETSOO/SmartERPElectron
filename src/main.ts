@@ -267,14 +267,20 @@ function autoUpgradeApp(
     version: string
 ) {
     // Download the app
-    const filePath = path.join(__dirname, `.\\..\\apps\\${appName}.zip`);
+    const fileFolder = path.join(__dirname, `.\\..\\apps`);
+    const filePath = path.join(fileFolder, `\\${appName}.zip`);
     const appPath = path.join(
         __dirname,
         `.\\..\\apps\\${appName + (loading ? '' : `-${version}`)}`
     );
 
     // Remove file
-    fs.rmSync(filePath, { recursive: true, force: true });
+    if (fs.existsSync(filePath)) {
+        fs.rmSync(filePath, { recursive: true, force: true });
+    } else {
+        // Make directory, otherwise createWriteStream would failed
+        fs.mkdirSync(fileFolder);
+    }
 
     const file = fs.createWriteStream(filePath, { autoClose: true });
     file.on('finish', () => {
