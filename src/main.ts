@@ -274,12 +274,12 @@ function autoUpgradeApp(
         `.\\..\\apps\\${appName + (loading ? '' : `-${version}`)}`
     );
 
-    // Remove file
-    if (fs.existsSync(filePath)) {
-        fs.rmSync(filePath, { recursive: true, force: true });
-    } else {
+    // Create directory (apps may removed) and remove file
+    if (!fs.existsSync(fileFolder)) {
         // Make directory, otherwise createWriteStream would failed
-        fs.mkdirSync(fileFolder);
+        fs.mkdirSync(fileFolder, { recursive: true });
+    } else if (fs.existsSync(filePath)) {
+        fs.rmSync(filePath, { recursive: true, force: true });
     }
 
     const file = fs.createWriteStream(filePath, { autoClose: true });
