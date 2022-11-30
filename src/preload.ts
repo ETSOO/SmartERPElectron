@@ -1,46 +1,28 @@
 // All of the Node.js APIs are available in the preload process.
 // It has the same sandbox as a Chrome extension.
 import { contextBridge, ipcRenderer } from 'electron';
-import { IBridgeHost } from './utils/IBridgeHost';
 
-const host: IBridgeHost = {
-    changeCulture(locale: string) {
-        ipcRenderer.send('command', 'changeCulture', locale);
+const host = {
+    activeTab(app: string) {
+        ipcRenderer.send('command', 'activeTab', app);
     },
-    closable() {
-        return true;
+    closeTab(app: string) {
+        ipcRenderer.send('command', 'removeTab', app);
     },
-    exit() {
-        ipcRenderer.send('command', 'exit');
-    },
-    async getLabels<T extends string>(...keys: T[]) {
-        const result: Record<string, unknown> =
-            (await ipcRenderer.invoke('command-async', 'getLabels', ...keys)) ??
-            {};
-
-        const init: any = {};
-        return keys.reduce(
-            (a, v) => ({
-                ...a,
-                [v]: result[v] ?? ''
-            }),
-            init
+    onActiveTab(func: (app: string) => void) {
+        ipcRenderer.on('main-message-active-tab', (_event, app: string) =>
+            func(app)
         );
     },
-    getStartUrl() {
-        const url = ipcRenderer.sendSync('command', 'getStartUrl');
-        return url;
+    onNewTab(func: (app: string) => void) {
+        ipcRenderer.on('main-message-new-tab', (_event, app: string) =>
+            func(app)
+        );
     },
-    loadApp(name: string, startUrl?: string) {
-        ipcRenderer.send('command', 'loadApp', name, startUrl);
-    },
-    userAuthorization(authorized: boolean) {
-        console.log(authorized);
-    },
-    onUpdate(func: (app: string, version: string) => void) {
+    onTitleChange(func: (app: string, title: string) => void) {
         ipcRenderer.on(
-            'main-message-update',
-            (_event, app: string, version: string) => func(app, version)
+            'main-message-title',
+            (_event, app: string, title: string) => func(app, title)
         );
     }
 };

@@ -14,12 +14,16 @@
     "learnSpelling": "纠正拼写",
     "loading": "司友®云ERP正在加载...",
     "lookUpSelection": "查找“{selection}”",
+    "mainApp": "管理中心",
     "paste": "黏贴(&P)",
+    "restartAppTip": "请重启程序",
     "saveImage": "保存图片(&M)",
     "saveImageAs": "保存图片为...(&V)",
     "saveLinkAs": "保存链接为...",
     "searchWithGoogle": "谷歌查询(&S)",
+    "selectAll": "全选(&A)",
     "services": "服务",
+    "unzipError": "文件解压错误",
     "versionErrorMessage": "{0}，点击'重试'按钮尝试重新加载。",
     "versionErrorTitle": "请求版本错误"
 }

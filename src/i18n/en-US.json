@@ -14,12 +14,16 @@
     "learnSpelling": "&Learn Spelling",
     "loading": "SmartERP is loading...",
     "lookUpSelection": "Look Up “{selection}”",
+    "mainApp": "Main App",
     "paste": "&Paste",
+    "restartAppTip": "Please restart",
     "saveImage": "Save I&mage",
     "saveImageAs": "Sa&ve Image As…",
     "saveLinkAs": "Save Link As…",
     "searchWithGoogle": "&Search with Google",
+    "selectAll": "Select All(&A)",
     "services": "Services",
+    "unzipError": "Unzip Error",
     "versionErrorMessage": "{0}. Click the 'Retry' button to reload.",
     "versionErrorTitle": "Request version error"
 }

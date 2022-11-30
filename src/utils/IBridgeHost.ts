@@ -50,4 +50,10 @@ export interface IBridgeHost {
      * @param func Callback function
      */
     onUpdate(func: (app: string, version: string) => void): void;
+
+    /**
+     * Set window title
+     * @param title Title
+     */
+    setTitle(title: string): void;
 }

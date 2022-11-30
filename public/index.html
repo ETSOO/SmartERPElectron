@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <meta
+            http-equiv="Content-Security-Policy"
+            content="default-src 'self' data: 'unsafe-inline' https://*.etsoo.com"
+        />
+        <title>ETSOO SmartERP</title>
+        <style>
+            body {
+                margin: 0;
+                padding: 0;
+                user-select: none;
+            }
+
+            ul {
+                display: flex;
+                margin: 0;
+                padding: 2px 2px 0 2px;
+                border-bottom: 1px solid #dae0e7;
+                background: #dee1e6;
+                list-style-type: none;
+            }
+
+            a {
+                text-decoration: none;
+                color: #333;
+            }
+
+            .tab {
+                height: 32px;
+                margin: 0 2px -1px 0;
+                padding: 0px 8px;
+                border: 1px solid #dae0e7;
+                border-radius: 8px 8px 0 0;
+                font-size: 9pt;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                cursor: default;
+            }
+
+            .tab div:first-child {
+                white-space: nowrap;
+                max-width: 120px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                flex-shrink: 3;
+            }
+
+            .tab:hover:not(.tabSelected) {
+                background: #eff0f3;
+            }
+
+            .tabSelected {
+                border-bottom: none;
+                background: #fff;
+            }
+
+            .closeTab {
+                width: 16px;
+                height: 16px;
+                padding: 2px;
+                border-radius: 16px;
+                line-height: 16px;
+                text-align: center;
+                display: none;
+            }
+
+            .closeTab:hover {
+                background: #dcdcdd;
+            }
+
+            .tabSelected .closeTab {
+                display: block;
+            }
+        </style>
+    </head>
+    <body>
+        <ul id="menu-container"></ul>
+    </body>
+    <script>
+        const et = window.electron;
+        const ul = document.getElementById('menu-container');
+        const activeClass = 'tabSelected';
+        if (et) {
+            const tabs = [];
+            let activeLi = undefined;
+
+            const setActive = (li) => {
+                activeLi?.classList.remove(activeClass);
+                li.classList.add(activeClass);
+                activeLi = li;
+            };
+
+            et.onActiveTab(function (app) {
+                const li = ul.querySelector(`[data-name="${app}"]`);
+                if (li) {
+                    // Move the item to the last
+                    tabs.push(tabs.splice(tabs.indexOf(app), 1)[0]);
+
+                    setActive(li);
+                }
+            });
+
+            et.onNewTab(function (app) {
+                let li = ul.querySelector(`[data-name="${app}"]`);
+                if (li == null) {
+                    li = document.createElement('li');
+                    li.className = 'tab';
+                    li.setAttribute('data-name', app);
+                    li.innerHTML = `<div>Loading...</div>${
+                        ul.childElementCount === 0
+                            ? ''
+                            : '<div class="closeTab">✕</div>'
+                    }`;
+                    li.addEventListener('click', (event) => {
+                        // Avoid double enter
+                        if (tabs[tabs.length - 1] === app) return;
+
+                        // Set active tab
+                        et.activeTab(app);
+
+                        // Move the item to the last
+                        tabs.push(tabs.splice(tabs.indexOf(app), 1)[0]);
+
+                        setActive(li);
+                    });
+                    li.querySelector('div.closeTab')?.addEventListener(
+                        'click',
+                        (event) => {
+                            // Prevent default
+                            event.stopImmediatePropagation();
+                            event.stopPropagation();
+                            event.preventDefault();
+
+                            // Remove the tab
+                            et.closeTab(app);
+                            tabs.pop();
+
+                            // UI
+                            li.remove();
+
+                            // Focus the next one
+                            const nextApp = tabs.slice(-1)[0];
+                            if (nextApp) {
+                                let nextli = ul.querySelector(
+                                    `[data-name="${nextApp}"]`
+                                );
+                                if (nextli) {
+                                    activeLi = nextli;
+                                    activeLi.classList.add(activeClass);
+                                }
+                            }
+                        }
+                    );
+                    ul.appendChild(li);
+                    tabs.push(app);
+                } else {
+                    // Move the item to the last
+                    tabs.push(tabs.splice(tabs.indexOf(app), 1)[0]);
+                }
+                setActive(li);
+            });
+            et.onTitleChange(function (app, title) {
+                const div = ul.querySelector(
+                    `[data-name="${app}"]`
+                )?.firstElementChild;
+                if (div) {
+                    div.innerHTML = title;
+                }
+            });
+        }
+    </script>
+</html>

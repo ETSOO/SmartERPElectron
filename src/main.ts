@@ -1,4 +1,11 @@
-import { app, BrowserWindow, dialog, ipcMain } from 'electron';
+import {
+    app,
+    BrowserView,
+    BrowserWindow,
+    dialog,
+    globalShortcut,
+    ipcMain
+} from 'electron';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as https from 'https';
@@ -7,8 +14,7 @@ import * as semver from 'semver';
 import { getCulture, ICulture } from './utils/CultureUtils';
 import StreamZip from 'node-stream-zip';
 import { ISettings, IVerions, VersionName } from './Entities';
-
-const contextMenu = require('electron-context-menu');
+import ContextMenu from 'electron-context-menu';
 
 // launching multiple times during install or update
 // https://www.electronforge.io/config/makers/squirrel.windows
@@ -21,18 +27,23 @@ require('update-electron-app')({
 });
 
 const appStorageField = 'SmartERP';
+const coreApp = 'core';
 
 // Current culture
 let culture: ICulture | null;
-
-// Context menu dispose function
-let contextMenuDispose: Function | null;
 
 // Current start Url or router Url
 let currentStartUrl: string | null | undefined;
 
 // Current settings
 let settings: ISettings;
+
+// Main window
+let mainWindow: BrowserWindow;
+
+// Browser views
+// https://blog.51cto.com/u_15495832/5067293
+const views: Record<VersionName, [number, Function] | undefined> = {};
 
 // Initialization
 function init() {
@@ -47,11 +58,25 @@ function updateCulture(locale: string) {
     culture = newCulture;
 
     // Context menu, may dispose first and then recreate
-    if (contextMenuDispose) contextMenuDispose();
-    contextMenuDispose = contextMenu({
+    /*
+    const appViews = views[coreApp];
+    if (appViews) {
+        const [viewId, contextMenuDispose] = appViews;
+        const view = getView(viewId);
+        if (view) {
+            if (contextMenuDispose) contextMenuDispose();
+            createContextMenu(view);
+        }
+    }
+    */
+}
+
+function createContextMenu(view: BrowserView) {
+    return ContextMenu({
+        window: view,
         showSearchWithGoogle: false,
-        spellcheck: false,
-        labels: culture.labels
+        showLearnSpelling: false,
+        labels: (culture ?? {}).labels
     });
 }
 
@@ -60,69 +85,147 @@ function getAppFile(name: string) {
     return path.join(__dirname, `.\\..\\apps\\${name}\\index.html`);
 }
 
+const tabsHeight = 36;
+function setViewSize(view: BrowserView, size: number[]) {
+    view.setBounds({
+        x: 0,
+        y: tabsHeight,
+        width: size[0],
+        height: size[1] - tabsHeight
+    });
+}
+
+function getView(name: VersionName | number) {
+    const viewId = typeof name === 'number' ? name : (views[name] ?? [])[0];
+    if (viewId == null) return undefined;
+    return mainWindow
+        .getBrowserViews()
+        .find((view) => view.webContents.id === viewId);
+}
+
+function setActiveTab(view: BrowserView, name?: VersionName) {
+    mainWindow.setTopBrowserView(view);
+
+    // Tabs UI
+    if (name) mainWindow.webContents.send('main-message-active-tab', name);
+}
+
 // Load app
-function loadApp(name: VersionName, win: BrowserWindow) {
+function loadApp(name: VersionName, currentView?: VersionName) {
     // App file
     const appFile = getAppFile(name);
+
+    // View
+    let view: BrowserView | undefined = undefined;
+    if (currentView) {
+        view = getView(currentView);
+    }
+
+    if (view == null) {
+        // Current view
+        const viewFound = getView(name);
+        if (viewFound) {
+            // Save reference
+            view = viewFound;
+
+            if (settings.current !== name) {
+                // Bring to top
+                setActiveTab(view, name);
+
+                // Current
+                settings.current = name;
+                persistSettings();
+            }
+        } else {
+            view = new BrowserView({
+                webPreferences: {
+                    nodeIntegration: false,
+                    webSecurity: true,
+                    additionalArguments: [`app=${name}`],
+                    preload: path.join(__dirname, 'appPreload.js') // Client identifier 'electron' setup
+                }
+            });
+            view.setAutoResize({ width: true, height: true });
+            setViewSize(view, mainWindow.getContentSize());
+            mainWindow.addBrowserView(view);
+
+            // Context menu
+            const cd = createContextMenu(view);
+
+            // Hold reference
+            views[name] = [view.webContents.id, cd];
+
+            // Tabs UI
+            mainWindow.webContents.send('main-message-new-tab', name);
+        }
+    }
 
     // Check the file
     if (!fs.existsSync(appFile)) {
         // Load the preloader
-        win.loadFile(path.join(__dirname, '../public/preloader.htm'), {
-            search: `title=${encodeURIComponent(
-                culture?.labels.loading ?? 'Loading...'
-            )}`
-        });
+        view.webContents.loadFile(
+            path.join(__dirname, '../public/preloader.htm'),
+            {
+                search: `title=${encodeURIComponent(
+                    culture?.labels.loading ?? 'Loading...'
+                )}`
+            }
+        );
 
         // Load the versions
-        loadVersions(win, (versions) => {
+        loadVersions((versions) => {
             const version = versions[name];
             if (version == null) {
-                dialog.showMessageBox(win, {
-                    type: 'error',
-                    title: 'Version Name',
-                    message: `No app ${name} version defined`
-                });
+                dialog
+                    .showMessageBox(mainWindow, {
+                        type: 'error',
+                        title: 'Version Name',
+                        message: `No app ${name} version defined`
+                    })
+                    .then(() => app.quit());
                 return;
             }
 
             // Download the app
             autoUpgradeApp(
-                win,
                 name,
-                (version) => loadAppBase(name, win, appFile, version),
+                (version) => loadAppBase(name, view!, appFile, version),
                 true,
                 version
             );
         });
     } else {
-        loadAppBase(name, win, appFile);
+        loadAppBase(name, view, appFile);
 
         // Auto upgrade
-        autoUpgrade(win);
+        autoUpgrade();
     }
 }
 
 // Load app base
 function loadAppBase(
     name: VersionName,
-    win: BrowserWindow,
+    view: BrowserView,
     appFile: string,
     version?: string
 ) {
-    win.loadFile(appFile);
+    view.webContents.loadFile(appFile);
+
+    if (settings.loadedApps == null) settings.loadedApps = [];
+    if (!settings.loadedApps.includes(name)) settings.loadedApps.push(name);
 
     settings.current = name;
     settings.apps ??= {};
     if (version) settings.apps[name] = version;
-    persistSettings(win);
+
+    persistSettings();
 }
 
 // Persist settings
-function persistSettings(win: BrowserWindow) {
+function persistSettings() {
     storage.set(appStorageField, settings, (error) => {
         if (error) {
-            dialog.showMessageBox(win, {
+            dialog.showMessageBox(mainWindow, {
                 type: 'error',
                 title: 'Storage Set',
                 message: error
@@ -133,7 +236,6 @@ function persistSettings(win: BrowserWindow) {
 
 // Load versions
 function loadVersions(
-    win: BrowserWindow,
     callback: (versions: IVerions) => void,
     errorHandling: boolean = true
 ) {
@@ -152,7 +254,7 @@ function loadVersions(
                     const versions = JSON.parse(body) as IVerions;
                     callback(versions);
                 } catch (error) {
-                    dialog.showMessageBox(win, {
+                    dialog.showMessageBox(mainWindow, {
                         type: 'error',
                         title: 'Versions JSON Parse',
                         message: `${error}`
@@ -167,7 +269,7 @@ function loadVersions(
         if (errorHandling) {
             const labels = culture?.labels!;
             dialog
-                .showMessageBox(win, {
+                .showMessageBox(mainWindow, {
                     type: 'error',
                     title: labels.versionErrorTitle,
                     buttons: [labels.retry, labels.close],
@@ -180,7 +282,7 @@ function loadVersions(
                 .then((value) => {
                     if (value.response === 0) {
                         // Retry
-                        loadVersions(win, callback, errorHandling);
+                        loadVersions(callback, errorHandling);
                     } else {
                         app.quit();
                     }
@@ -195,72 +297,87 @@ function createWindow() {
     settings = storage.getSync(appStorageField) as ISettings;
 
     // Create the browser window.
-    const mainWindow = new BrowserWindow({
+    mainWindow = new BrowserWindow({
         icon: path.join(__dirname, '../public/favicon.ico'),
         show: false,
         title: culture?.labels.appName,
-        frame: false,
+
+        //frame: false,
+        autoHideMenuBar: true,
         webPreferences: {
+            // nodeIntegration: true,
+            // webviewTag: true,
             preload: path.join(__dirname, 'preload.js')
         }
     });
+    mainWindow.loadFile(path.join(__dirname, '../public/index.html'));
 
     // and load the index.html of the app.
     // mainWindow.loadFile(path.join(__dirname, "../index.html"));
-    const startApp = settings.current ?? 'core';
-    loadApp(startApp, mainWindow);
+    //const startApp = settings.current ?? 'core';
+    //loadApp(startApp);
+    const current = settings.current;
+    let apps = settings.loadedApps ?? [];
+    if (apps.length === 0) apps = [settings.current ?? coreApp];
+
+    apps.forEach((app) => loadApp(app));
+
+    if (current) {
+        const view = getView(current);
+        if (view) {
+            setActiveTab(view, current);
+        }
+    }
 
     // Maximize window
     mainWindow.maximize();
     mainWindow.show();
+
+    mainWindow.webContents.on('did-finish-load', function () {
+        mainWindow.title = culture?.labels.appName!;
+    });
 
     // Open the DevTools.
     // mainWindow.webContents.openDevTools();
 }
 
 // Auto upgrade
-function autoUpgrade(win: BrowserWindow) {
+function autoUpgrade() {
     const apps = settings.apps;
     if (apps == null) return;
 
-    loadVersions(
-        win,
-        (versions) => {
-            let k: keyof IVerions;
-            for (k in apps) {
-                const currentVersion = apps[k];
-                const newVersion = versions[k];
-                if (
-                    currentVersion == null ||
-                    semver.gt(newVersion, currentVersion)
-                ) {
-                    autoUpgradeApp(
-                        win,
-                        k,
-                        (version) => {
-                            // Update version
-                            apps[k] = version;
-                            persistSettings(win);
+    loadVersions((versions) => {
+        let k: keyof IVerions;
+        for (k in apps) {
+            const currentVersion = apps[k];
+            const newVersion = versions[k];
+            if (
+                currentVersion == null ||
+                semver.gt(newVersion, currentVersion)
+            ) {
+                autoUpgradeApp(
+                    k,
+                    (version) => {
+                        // Update version
+                        apps[k] = version;
 
-                            // Notice
-                            win.webContents.send('main-message', 'update', [
-                                k,
-                                version
-                            ]);
-                        },
-                        false,
-                        newVersion
-                    );
-                }
+                        // Notice
+                        mainWindow.webContents.send(
+                            'main-message-update',
+                            k,
+                            version
+                        );
+                    },
+                    false,
+                    newVersion
+                );
             }
-        },
-        false
-    );
+        }
+    }, false);
 }
 
 // Auto upgrade app
 function autoUpgradeApp(
-    win: BrowserWindow,
     appName: VersionName,
     callback: (version: string) => void,
     loading: boolean = false,
@@ -274,6 +391,9 @@ function autoUpgradeApp(
         `.\\..\\apps\\${appName + (loading ? '' : `-${version}`)}`
     );
 
+    // Labels
+    const labels = culture?.labels!;
+
     // Create directory (apps may removed) and remove file
     if (!fs.existsSync(fileFolder)) {
         // Make directory, otherwise createWriteStream would failed
@@ -285,14 +405,25 @@ function autoUpgradeApp(
     const file = fs.createWriteStream(filePath, { autoClose: true });
     file.on('finish', () => {
         // Extract
-        const zip = new StreamZip({ file: filePath });
+        const zip = new StreamZip({
+            file: filePath,
+            skipEntryNameValidation: true
+        });
         zip.on('error', (err) => {
+            console.log('zip', err);
             if (loading) {
-                dialog.showMessageBox(win, {
-                    type: 'error',
-                    title: 'Unzip Error',
-                    message: `${err}`
-                });
+                dialog
+                    .showMessageBox(mainWindow, {
+                        type: 'error',
+                        title: labels.unzipError,
+                        message: `${err} - (${labels.restartAppTip})`
+                    })
+                    .then(() => {
+                        // Remove the zip file
+                        fs.rmSync(filePath, { recursive: true, force: true });
+
+                        app.quit();
+                    });
             }
         });
         zip.on('ready', () => {
@@ -317,11 +448,13 @@ function autoUpgradeApp(
                         fs.rmSync(appPath, { recursive: true, force: true });
 
                         if (loading) {
-                            dialog.showMessageBox(win, {
-                                type: 'error',
-                                title: 'Extract App',
-                                message: err
-                            });
+                            dialog
+                                .showMessageBox(mainWindow, {
+                                    type: 'error',
+                                    title: 'Extract App',
+                                    message: err
+                                })
+                                .then(() => app.quit());
                         }
                     }
                 });
@@ -330,20 +463,18 @@ function autoUpgradeApp(
     });
 
     // Get the zip file
-    const request = https.get(
-        `https://cn.etsoo.com/apps/${appName}.${version}.zip`,
-        function (response) {
-            // Save to file
-            response.pipe(file);
-        }
-    );
+    var versionFile = `https://cn.etsoo.com/apps/${appName}.${version}.zip`;
+    const request = https.get(versionFile, function (response) {
+        // Save to file
+        response.pipe(file);
+    });
 
     // Error handler
     request.on('error', function (err) {
         if (loading) {
             const labels = culture?.labels!;
             dialog
-                .showMessageBox(win, {
+                .showMessageBox(mainWindow, {
                     type: 'error',
                     title: labels.downloadErrorTitle,
                     buttons: [labels.retry, labels.close],
@@ -356,13 +487,7 @@ function autoUpgradeApp(
                 .then((value) => {
                     if (value.response === 0) {
                         // Retry
-                        autoUpgradeApp(
-                            win,
-                            appName,
-                            callback,
-                            loading,
-                            version
-                        );
+                        autoUpgradeApp(appName, callback, loading, version);
                     } else {
                         app.quit();
                     }
@@ -372,7 +497,7 @@ function autoUpgradeApp(
 }
 
 // IPC messages
-ipcMain.on('command', (event, name, param1, param2, ...args) => {
+ipcMain.on('command', (event, name, param1, param2, param3) => {
     if (name === 'changeCulture') {
         updateCulture(param1);
         return;
@@ -391,13 +516,55 @@ ipcMain.on('command', (event, name, param1, param2, ...args) => {
     }
 
     if (name === 'loadApp') {
+        const app = param1;
         currentStartUrl = param2;
+        const currentApp = param3;
 
-        const win = BrowserWindow.getFocusedWindow();
-        if (win != null) {
-            loadApp(param1, win);
+        if (
+            app === coreApp &&
+            currentStartUrl != null &&
+            currentApp != null &&
+            currentApp != coreApp
+        ) {
+            loadApp(app, currentApp);
+        } else {
+            loadApp(app);
         }
 
+        return;
+    }
+
+    if (name === 'activeTab') {
+        const view = getView(param1);
+        if (view) {
+            setActiveTab(view);
+            settings.current = param1;
+            persistSettings();
+        }
+        return;
+    }
+
+    if (name === 'removeTab') {
+        // const win = BrowserWindow.getFocusedWindow();
+        const view = getView(param1);
+        if (view) {
+            mainWindow.removeBrowserView(view);
+            const apps = settings.loadedApps;
+            if (apps) {
+                const index = apps.indexOf(param1);
+                if (index !== -1) apps.splice(index, 1);
+                persistSettings();
+            }
+        }
+        return;
+    }
+
+    if (name === 'title') {
+        // app and title
+        const app = param1;
+        const title =
+            app === coreApp ? culture?.labels.mainApp ?? param2 : param2;
+        mainWindow.webContents.send('main-message-title', app, title);
         return;
     }
 });
@@ -430,6 +597,14 @@ app.on('ready', () => {
         // On macOS it's common to re-create a window in the app when the
         // dock icon is clicked and there are no other windows open.
         if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    });
+
+    globalShortcut.register('Alt+CommandOrControl+D', () => {
+        // Add debug support
+        const view = settings.current
+            ? getView(settings.current) ?? mainWindow
+            : mainWindow;
+        view?.webContents.openDevTools();
     });
 });
 
