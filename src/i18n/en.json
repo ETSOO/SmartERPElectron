@@ -23,6 +23,7 @@
     "searchWithGoogle": "&Search with Google",
     "selectAll": "Select All(&A)",
     "services": "Services",
+    "tabLoading": "Loading...",
     "unzipError": "Unzip Error",
     "versionErrorMessage": "{0}. Click the 'Retry' button to reload.",
     "versionErrorTitle": "Request version error"

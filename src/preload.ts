@@ -14,8 +14,14 @@ const host = {
             func(app)
         );
     },
-    onNewTab(func: (app: string) => void) {
-        ipcRenderer.on('main-message-new-tab', (_event, app: string) =>
+    onNewTab(func: (app: string, label: string) => void) {
+        ipcRenderer.on(
+            'main-message-new-tab',
+            (_event, app: string, label: string) => func(app, label)
+        );
+    },
+    onRemoveTab(func: (app: string) => void) {
+        ipcRenderer.on('main-message-remove-tab', (_event, app: string) =>
             func(app)
         );
     },

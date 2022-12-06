@@ -23,6 +23,7 @@
     "searchWithGoogle": "谷歌查询(&S)",
     "selectAll": "全选(&A)",
     "services": "服务",
+    "tabLoading": "正在加载...",
     "unzipError": "文件解压错误",
     "versionErrorMessage": "{0}，点击'重试'按钮尝试重新加载。",
     "versionErrorTitle": "请求版本错误"

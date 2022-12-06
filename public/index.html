@@ -104,17 +104,13 @@
                 }
             });
 
-            et.onNewTab(function (app) {
+            et.onNewTab(function (app, label) {
                 let li = ul.querySelector(`[data-name="${app}"]`);
                 if (li == null) {
                     li = document.createElement('li');
                     li.className = 'tab';
                     li.setAttribute('data-name', app);
-                    li.innerHTML = `<div>Loading...</div>${
-                        ul.childElementCount === 0
-                            ? ''
-                            : '<div class="closeTab">✕</div>'
-                    }`;
+                    li.innerHTML = `<div>${label}</div><div class="closeTab">✕</div>`;
                     li.addEventListener('click', (event) => {
                         // Avoid double enter
                         if (tabs[tabs.length - 1] === app) return;
@@ -162,6 +158,12 @@
                     tabs.push(tabs.splice(tabs.indexOf(app), 1)[0]);
                 }
                 setActive(li);
+            });
+            et.onRemoveTab(function (app) {
+                const li = ul.querySelector(`[data-name="${app}"]`);
+                if (li) {
+                    li.querySelector('div.closeTab').click();
+                }
             });
             et.onTitleChange(function (app, title) {
                 const div = ul.querySelector(

@@ -11,9 +11,9 @@ import * as path from 'path';
 import * as https from 'https';
 import * as storage from 'electron-json-storage';
 import * as semver from 'semver';
-import { getCulture, ICulture } from './utils/CultureUtils';
+import { cultures, getCulture, ICulture } from './utils/CultureUtils';
 import StreamZip from 'node-stream-zip';
-import { ISettings, IVerions, VersionName } from './Entities';
+import { ISettings, IVersions, VersionName } from './Entities';
 import ContextMenu from 'electron-context-menu';
 
 // launching multiple times during install or update
@@ -30,7 +30,7 @@ const appStorageField = 'SmartERP';
 const coreApp = 'core';
 
 // Current culture
-let culture: ICulture | null;
+let culture: ICulture = cultures[0];
 
 // Current start Url or router Url
 let currentStartUrl: string | null | undefined;
@@ -53,7 +53,7 @@ function init() {
 
 function updateCulture(locale: string) {
     const newCulture = getCulture(locale);
-    if (culture && culture.id === newCulture.id) return;
+    if (culture.id === newCulture.id) return;
 
     culture = newCulture;
 
@@ -76,7 +76,7 @@ function createContextMenu(view: BrowserView) {
         window: view,
         showSearchWithGoogle: false,
         showLearnSpelling: false,
-        labels: (culture ?? {}).labels
+        labels: culture.labels
     });
 }
 
@@ -156,7 +156,8 @@ function loadApp(name: VersionName, currentView?: VersionName) {
             views[name] = [view.webContents.id, cd];
 
             // Tabs UI
-            mainWindow.webContents.send('main-message-new-tab', name);
+            const label = culture.labels.tabLoading ?? '...';
+            mainWindow.webContents.send('main-message-new-tab', name, label);
         }
     }
 
@@ -167,38 +168,42 @@ function loadApp(name: VersionName, currentView?: VersionName) {
             path.join(__dirname, '../public/preloader.htm'),
             {
                 search: `title=${encodeURIComponent(
-                    culture?.labels.loading ?? 'Loading...'
+                    culture.labels.loading ?? 'Loading...'
                 )}`
             }
         );
 
         // Load the versions
-        loadVersions((versions) => {
-            const version = versions[name];
-            if (version == null) {
-                dialog
-                    .showMessageBox(mainWindow, {
-                        type: 'error',
-                        title: 'Version Name',
-                        message: `No app ${name} version defined`
-                    })
-                    .then(() => app.quit());
-                return;
-            }
+        loadVersions(
+            (versions) => {
+                const version = versions[name];
+                if (version == null) {
+                    dialog
+                        .showMessageBox(mainWindow, {
+                            type: 'error',
+                            title: 'Version Name',
+                            message: `No app ${name} version defined`
+                        })
+                        .then(() => quitView(name, view!));
+                    return;
+                }
 
-            // Download the app
-            autoUpgradeApp(
-                name,
-                (version) => loadAppBase(name, view!, appFile, version),
-                true,
-                version
-            );
-        });
+                // Download the app
+                autoUpgradeApp(
+                    name,
+                    (version) => loadAppBase(name, view!, appFile, version),
+                    version,
+                    view!
+                );
+            },
+            view,
+            name
+        );
     } else {
         loadAppBase(name, view, appFile);
 
         // Auto upgrade
-        autoUpgrade();
+        autoUpgrade(name, view);
     }
 }
 
@@ -234,14 +239,26 @@ function persistSettings() {
     });
 }
 
+let versions: IVersions | undefined;
+
 // Load versions
 function loadVersions(
-    callback: (versions: IVerions) => void,
+    callback: (versions: IVersions) => void,
+    view: BrowserView,
+    appName: VersionName,
     errorHandling: boolean = true
 ) {
+    if (versions) {
+        callback(versions);
+        return;
+    }
+
     // Get the version JSON file
     const request = https.get(
         `https://cn.etsoo.com/apps/versions.json`,
+        {
+            timeout: 120000
+        },
         function (res) {
             let body = '';
 
@@ -251,7 +268,7 @@ function loadVersions(
 
             res.on('end', () => {
                 try {
-                    const versions = JSON.parse(body) as IVerions;
+                    versions = JSON.parse(body) as IVersions;
                     callback(versions);
                 } catch (error) {
                     dialog.showMessageBox(mainWindow, {
@@ -267,7 +284,7 @@ function loadVersions(
     // Error handler
     request.on('error', function (err) {
         if (errorHandling) {
-            const labels = culture?.labels!;
+            const labels = culture.labels;
             dialog
                 .showMessageBox(mainWindow, {
                     type: 'error',
@@ -282,9 +299,9 @@ function loadVersions(
                 .then((value) => {
                     if (value.response === 0) {
                         // Retry
-                        loadVersions(callback, errorHandling);
+                        loadVersions(callback, view, appName, errorHandling);
                     } else {
-                        app.quit();
+                        quitView(appName, view);
                     }
                 });
         }
@@ -300,7 +317,7 @@ function createWindow() {
     mainWindow = new BrowserWindow({
         icon: path.join(__dirname, '../public/favicon.ico'),
         show: false,
-        title: culture?.labels.appName,
+        title: culture.labels.appName,
 
         //frame: false,
         autoHideMenuBar: true,
@@ -334,55 +351,82 @@ function createWindow() {
     mainWindow.show();
 
     mainWindow.webContents.on('did-finish-load', function () {
-        mainWindow.title = culture?.labels.appName!;
+        mainWindow.title = culture.labels.appName;
     });
 
     // Open the DevTools.
     // mainWindow.webContents.openDevTools();
 }
 
+function quitView(
+    app: VersionName,
+    view: BrowserView,
+    triggerEvent: boolean = true
+) {
+    mainWindow.removeBrowserView(view);
+
+    const apps = settings.loadedApps;
+    if (apps) {
+        const index = apps.indexOf(app);
+        if (index !== -1) apps.splice(index, 1);
+        persistSettings();
+    }
+
+    if (triggerEvent) {
+        mainWindow.webContents.send('main-message-remove-tab', app);
+    }
+}
+
 // Auto upgrade
-function autoUpgrade() {
+function autoUpgrade(appName: VersionName, view: BrowserView) {
     const apps = settings.apps;
     if (apps == null) return;
 
-    loadVersions((versions) => {
-        let k: keyof IVerions;
-        for (k in apps) {
-            const currentVersion = apps[k];
-            const newVersion = versions[k];
-            if (
-                currentVersion == null ||
-                semver.gt(newVersion, currentVersion)
-            ) {
-                autoUpgradeApp(
-                    k,
-                    (version) => {
-                        // Update version
-                        apps[k] = version;
+    loadVersions(
+        (versions) => {
+            let k: keyof IVersions;
+            for (k in apps) {
+                const currentVersion = apps[k];
+                const newVersion = versions[k];
+                if (
+                    currentVersion == null ||
+                    semver.gt(newVersion, currentVersion)
+                ) {
+                    autoUpgradeApp(
+                        k,
+                        (version) => {
+                            // Update version
+                            apps[k] = version;
 
-                        // Notice
-                        mainWindow.webContents.send(
-                            'main-message-update',
-                            k,
-                            version
-                        );
-                    },
-                    false,
-                    newVersion
-                );
+                            // Notice
+                            mainWindow.webContents.send(
+                                'main-message-update',
+                                k,
+                                version
+                            );
+                        },
+                        newVersion,
+                        view
+                    );
+                }
             }
-        }
-    }, false);
+        },
+        view,
+        appName,
+        false
+    );
 }
 
 // Auto upgrade app
 function autoUpgradeApp(
     appName: VersionName,
     callback: (version: string) => void,
-    loading: boolean = false,
-    version: string
+    version: string,
+    view: BrowserView
 ) {
+    const appFile = getAppFile(appName);
+    const loading = !fs.existsSync(appFile);
+
     // Download the app
     const fileFolder = path.join(__dirname, `.\\..\\apps`);
     const filePath = path.join(fileFolder, `\\${appName}.zip`);
@@ -392,7 +436,7 @@ function autoUpgradeApp(
     );
 
     // Labels
-    const labels = culture?.labels!;
+    const labels = culture.labels;
 
     // Create directory (apps may removed) and remove file
     if (!fs.existsSync(fileFolder)) {
@@ -403,7 +447,19 @@ function autoUpgradeApp(
     }
 
     const file = fs.createWriteStream(filePath, { autoClose: true });
+    file.on('error', () => {
+        if (loading) {
+            dialog
+                .showMessageBox(mainWindow, {
+                    type: 'error',
+                    title: 'App Writing Stream',
+                    message: 'fs.createWriteStream failed'
+                })
+                .then(() => quitView(appName, view));
+        }
+    });
     file.on('finish', () => {
+        console.log(`${filePath} is finished`);
         // Extract
         const zip = new StreamZip({
             file: filePath,
@@ -421,12 +477,13 @@ function autoUpgradeApp(
                     .then(() => {
                         // Remove the zip file
                         fs.rmSync(filePath, { recursive: true, force: true });
-
-                        app.quit();
+                        quitView(appName, view);
                     });
             }
         });
         zip.on('ready', () => {
+            console.log(`zip file is ready for ${appPath}`);
+
             // Remove all content
             fs.rmSync(appPath, { recursive: true, force: true });
 
@@ -454,7 +511,7 @@ function autoUpgradeApp(
                                     title: 'Extract App',
                                     message: err
                                 })
-                                .then(() => app.quit());
+                                .then(() => quitView(appName, view));
                         }
                     }
                 });
@@ -464,15 +521,25 @@ function autoUpgradeApp(
 
     // Get the zip file
     var versionFile = `https://cn.etsoo.com/apps/${appName}.${version}.zip`;
-    const request = https.get(versionFile, function (response) {
-        // Save to file
-        response.pipe(file);
-    });
+    const request = https.get(
+        versionFile,
+        {
+            timeout: 120000
+        },
+        function (response) {
+            // Save to file
+            response.pipe(file, { end: true });
+        }
+    );
 
     // Error handler
     request.on('error', function (err) {
+        request.destroy();
+        file.destroy();
+        fs.rmSync(filePath, { recursive: true, force: true });
+
         if (loading) {
-            const labels = culture?.labels!;
+            const labels = culture.labels;
             dialog
                 .showMessageBox(mainWindow, {
                     type: 'error',
@@ -487,9 +554,9 @@ function autoUpgradeApp(
                 .then((value) => {
                     if (value.response === 0) {
                         // Retry
-                        autoUpgradeApp(appName, callback, loading, version);
+                        autoUpgradeApp(appName, callback, version, view);
                     } else {
-                        app.quit();
+                        quitView(appName, view);
                     }
                 });
         }
@@ -548,13 +615,7 @@ ipcMain.on('command', (event, name, param1, param2, param3) => {
         // const win = BrowserWindow.getFocusedWindow();
         const view = getView(param1);
         if (view) {
-            mainWindow.removeBrowserView(view);
-            const apps = settings.loadedApps;
-            if (apps) {
-                const index = apps.indexOf(param1);
-                if (index !== -1) apps.splice(index, 1);
-                persistSettings();
-            }
+            quitView(param1, view, false);
         }
         return;
     }
@@ -563,7 +624,7 @@ ipcMain.on('command', (event, name, param1, param2, param3) => {
         // app and title
         const app = param1;
         const title =
-            app === coreApp ? culture?.labels.mainApp ?? param2 : param2;
+            app === coreApp ? culture.labels.mainApp ?? param2 : param2;
         mainWindow.webContents.send('main-message-title', app, title);
         return;
     }
@@ -575,7 +636,7 @@ ipcMain.on('command-async', async (event, name, ...args) => {
         const result = args.reduce(
             (a, v) => ({
                 ...a,
-                [v]: culture?.labels[v] ?? ''
+                [v]: culture.labels[v] ?? ''
             }),
             init
         );
@@ -623,7 +684,7 @@ app.on('will-quit', () => {
     const apps = settings.apps;
     if (apps == null) return;
 
-    let k: keyof IVerions;
+    let k: keyof IVersions;
     for (k in apps) {
         // Version
         const currentVersion = apps[k];

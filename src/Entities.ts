@@ -1,14 +1,14 @@
 /**
  * Remote versions
  */
-export interface IVerions extends Record<string, string> {
+export interface IVersions extends Record<string, string> {
     core: string;
 }
 
 /**
  * Version name type
  */
-export type VersionName = keyof IVerions & string;
+export type VersionName = keyof IVersions & string;
 
 /**
  * Settings
@@ -16,5 +16,5 @@ export type VersionName = keyof IVerions & string;
 export interface ISettings {
     loadedApps?: VersionName[];
     current?: VersionName;
-    apps?: Partial<IVerions>;
+    apps?: Partial<IVersions>;
 }
