@@ -7,6 +7,8 @@ import { IBridgeHost } from './utils/IBridgeHost';
 const app = process.argv.find((a) => a.startsWith('app='))?.substring(4);
 
 const host: IBridgeHost = {
+    // BridgeHostName.Electron
+    name: 0,
     changeCulture(locale: string) {
         ipcRenderer.send('command', 'changeCulture', locale);
     },

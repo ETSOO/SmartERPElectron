@@ -1,7 +1,8 @@
 {
     "appName": "司友®雲ERP",
+    "cancel": "取消",
     "close": "關閉",
-    "retry": "重試",
+    "confirm": "確認",
     "copy": "複製(&C)",
     "copyLink": "複製鏈接(&K)",
     "copyImage": "複製圖片(&Y)",
@@ -10,12 +11,15 @@
     "download": "下載",
     "downloadErrorMessage": "{0}，點擊'重試'按鈕嘗試重新下載。",
     "downloadErrorTitle": "下載程序錯誤",
+    "f5Tip": "確定要清除緩存，重新加載程序嗎？",
     "inspect": "檢查元素(&N)",
     "learnSpelling": "糾正拼寫",
     "loading": "司友®雲ERP正在加載...",
     "lookUpSelection": "查找“{selection}”",
     "mainApp": "管理中心",
+    "ok": "確定",
     "paste": "黏貼(&P)",
+    "retry": "重試",
     "restartAppTip": "請重啟程序",
     "saveImage": "保存圖片(&M)",
     "saveImageAs": "保存圖片為...(&V)",
@@ -25,6 +29,6 @@
     "services": "服務",
     "tabLoading": "正在加載...",
     "unzipError": "文件解壓錯誤",
-    "versionErrorMessage": "{0}，點擊'重試'按鈕嘗試重新加載。",
+    "versionErrorMessage": "本地網絡或服務器端故障，請重試！",
     "versionErrorTitle": "請求版本錯誤"
 }

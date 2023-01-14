@@ -1,7 +1,8 @@
 {
     "appName": "司友®云ERP",
+    "cancel": "取消",
     "close": "关闭",
-    "retry": "重试",
+    "confirm": "确认",
     "copy": "复制(&C)",
     "copyLink": "复制链接(&K)",
     "copyImage": "复制图片(&Y)",
@@ -10,12 +11,15 @@
     "download": "下载",
     "downloadErrorMessage": "{0}，点击'重试'按钮尝试重新下载。",
     "downloadErrorTitle": "下载程序错误",
+    "f5Tip": "确定要清除缓存，重新加载程序吗？",
     "inspect": "检查元素(&N)",
     "learnSpelling": "纠正拼写",
     "loading": "司友®云ERP正在加载...",
     "lookUpSelection": "查找“{selection}”",
     "mainApp": "管理中心",
+    "ok": "确定",
     "paste": "黏贴(&P)",
+    "retry": "重试",
     "restartAppTip": "请重启程序",
     "saveImage": "保存图片(&M)",
     "saveImageAs": "保存图片为...(&V)",
@@ -25,6 +29,6 @@
     "services": "服务",
     "tabLoading": "正在加载...",
     "unzipError": "文件解压错误",
-    "versionErrorMessage": "{0}，点击'重试'按钮尝试重新加载。",
+    "versionErrorMessage": "本地网络或服务器端故障，请重试！",
     "versionErrorTitle": "请求版本错误"
 }

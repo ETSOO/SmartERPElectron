@@ -4,6 +4,11 @@
  */
 export interface IBridgeHost {
     /**
+     * Name
+     */
+    readonly name: number;
+
+    /**
      * Change culture
      * @param locale Locale
      */

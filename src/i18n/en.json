@@ -1,7 +1,8 @@
 {
     "appName": "ETSOO® SmartERP",
+    "cancel": "Cancel",
     "close": "Close",
-    "retry": "Retry",
+    "confirm": "Confirm",
     "copy": "&Copy",
     "copyLink": "Copy Lin&k",
     "copyImage": "Cop&y Image",
@@ -10,12 +11,15 @@
     "download": "Download",
     "downloadErrorMessage": "{0}. Click the 'Retry' button to download again.",
     "downloadErrorTitle": "Download program error",
+    "f5Tip": "Are you sure you want to clear the cache and reload the program?",
     "inspect": "I&nspect Element",
     "learnSpelling": "&Learn Spelling",
     "loading": "SmartERP is loading...",
     "lookUpSelection": "Look Up “{selection}”",
     "mainApp": "Main App",
+    "ok": "OK",
     "paste": "&Paste",
+    "retry": "Retry",
     "restartAppTip": "Please restart",
     "saveImage": "Save I&mage",
     "saveImageAs": "Sa&ve Image As…",
@@ -25,6 +29,6 @@
     "services": "Services",
     "tabLoading": "Loading...",
     "unzipError": "Unzip Error",
-    "versionErrorMessage": "{0}. Click the 'Retry' button to reload.",
+    "versionErrorMessage": "Local network or server failure, please try again!",
     "versionErrorTitle": "Request version error"
 }
