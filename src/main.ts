@@ -511,7 +511,7 @@ async function upgradeApp(
                     if (zipError == null) {
                         if (err == null) {
                             // When not opened
-                            if (getView(appName) != null) {
+                            if (getView(appName) == null) {
                                 try {
                                     // Remove current folder
                                     const appPath = fileFolder + '\\' + appName;
